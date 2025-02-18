@@ -13,12 +13,10 @@ cache:
   paths:
     - .m2/repository
 
-before_script:
-  - echo "Using Java version: $(java -version)"
-  - echo "Using Maven version: $(mvn -version)"
-
 build:
   stage: build
+  tags:
+    - messenger
   script:
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
@@ -28,6 +26,8 @@ build:
 
 test:
   stage: test
+  tags:
+    - messenger
   script:
     - mvn $MAVEN_CLI_OPTS test
   artifacts:
