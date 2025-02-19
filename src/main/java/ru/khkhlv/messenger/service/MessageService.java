@@ -26,4 +26,12 @@ public class MessageService {
     public List<Message> getMessagesForUser(String recipient) {
         return messageRepo.findByRecipientOrderByTimestampAsc(recipient);
     }
+
+    public void deleteMessage(Long id) {
+        messageRepo.deleteById(id);
+    }
+
+    public Message getMessageById(Long id) {
+        return messageRepo.getReferenceById(id);
+    }
 }

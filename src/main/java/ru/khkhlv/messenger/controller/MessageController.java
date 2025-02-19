@@ -23,4 +23,15 @@ public class MessageController {
     public List<Message> getMessages(@PathVariable String recipient) {
         return messageService.getMessagesForUser(recipient);
     }
+
+    @GetMapping("/{id}")
+    public Message getMessage(@PathVariable Long id) {
+        return messageService.getMessageById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteMessage(@PathVariable Long id) {
+        messageService.deleteMessage(id);
+        return "Message with ID " + id + " has been deleted.";
+    }
 }
