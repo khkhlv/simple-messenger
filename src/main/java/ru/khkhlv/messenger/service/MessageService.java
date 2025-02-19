@@ -32,6 +32,7 @@ public class MessageService {
     }
 
     public Message getMessageById(Long id) {
-        return messageRepo.getReferenceById(id);
+        return messageRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Message not found with ID: " + id));
     }
 }
