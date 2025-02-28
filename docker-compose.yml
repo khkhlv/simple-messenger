@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  simple-messenger:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - messenger-network
+    ports:
+      - "8080:8080"
+    environment:
+      spring.datasource.url: "jdbc:postgresql://messenger-db:5432/messenger_db"
+      spring.datasource.username: "postgres"
+      spring.datasource.password: "postgres"
+
+  messenger-db:
+    container_name: messenger-db
+    image: postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=messenger_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - messenger-network
+
+networks:
+  messenger-network:
+    name: messenger-network
+    driver: bridge
