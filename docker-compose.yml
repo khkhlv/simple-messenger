@@ -10,13 +10,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      spring.datasource.url: "jdbc:postgresql://messenger-db:5432/messenger_db"
+      spring.datasource.username: "postgres"
+      spring.datasource.password: "postgres"
 
   messenger-db:
     container_name: messenger-db
     image: postgres
     restart: always
-    shm_size: 128mb
     ports:
       - "5433:5432"
     environment:
@@ -25,9 +26,8 @@ services:
       - POSTGRES_PASSWORD=postgres
     networks:
       - messenger-network
-    volumes:
-      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
 
 networks:
   messenger-network:
+    name: messenger-network
     driver: bridge
