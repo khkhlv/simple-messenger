@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   simple-messenger:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: crpq13mhfsq6urcrb46a/deepk10/messenger:1.0
     networks:
       - messenger-network
     ports:
