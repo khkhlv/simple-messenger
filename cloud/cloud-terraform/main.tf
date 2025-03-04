@@ -22,15 +22,15 @@ resource "yandex_compute_instance" "instance-based-on-coi" {
     }
   }
   network_interface {
-    subnet_id = "e9bcn9027uc8o5g0iude"
-    nat = true
+    subnet_id = "e9buvi02as3u672c0hju"
+    nat       = true
   }
   resources {
-    cores = 2
+    cores  = 2
     memory = 2
   }
   metadata = {
     docker-container-declaration = file("${path.module}/declaration.yaml")
-    user-data = file("${path.module}/cloud_config.yaml")
+    user-data                    = file("${path.module}/cloud_config.yaml")
   }
 }
