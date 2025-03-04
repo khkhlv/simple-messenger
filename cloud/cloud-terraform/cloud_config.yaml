@@ -1,8 +1,8 @@
 #cloud-config
 ssh_pwauth: no
 users:
-  - name: khkhlv
+  - name: deep
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
     ssh_authorized_keys:
-      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDhrBazX+t1Q4fojE+fYscORl8V/jcVKIfDdwhSMOASmvTFeaCjx2SvaoTtDApRIgsx4hRTnOI4iByo6MYq5slGQIRAkPwBm7XoVvecBwj/Ix0nJKJVTSdAuPGnWbYsMkIzknb+g40bQedMZQkcsEAowLI1pA4qGs8VB+d00Y+4z0vLDJWso8ABGa+zngwrS9/BngBXFZaeN6+zbbKTquD1vqmgFwTO+Sr70XcnZbJqttu7P37Vla7QVQTpA5jN/WPYX7XSDhjssW9sc466p6x7rScLUa2oJBJsI2EWa58CpYVrO6MXAPniAkls5vdsMVEl4CFluznpYIsoutkYQ/rWPBIRun5UEa+Bo0FQTnwK4WNLy1jYyINoJ2Q9cZu7140n17ATeoljNgFuvqq72cFgDFkBSuKtQyVIr6GTAyfMLysQRlYB/DzTfvB9jUZirWmbvuOR/e8cZcQ2Sizw5J9p8BwlmajgCi3JxszTcDC+DA/aS/vVQ3dWKhhU6Q1luwU= khkhlv"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGGJj3yUgvI9985e9CWpwGXaq1ippxAiL0jpyU2kzGpy deep"
