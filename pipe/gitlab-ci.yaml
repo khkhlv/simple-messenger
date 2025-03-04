@@ -17,6 +17,8 @@ cache:
 sonarcloud-check:
   image: maven:3-openjdk-17
   stage: sonar-check
+  tags:
+    - messenger
   cache:
     key: "${CI_JOB_NAME}"
     paths:
