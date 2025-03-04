@@ -9,4 +9,10 @@ import java.util.List;
 @Repository
 public interface MessageRepo extends JpaRepository<Message, Long> {
     List<Message> findByRecipientOrderByTimestampAsc(String recipient);
+
+    List<Message> findByContentContainingIgnoreCase(String keyword);
+
+    List<Message> findBySenderContainingIgnoreCase(String sender);
+
+    List<Message> findByRecipientContainingIgnoreCase(String recipient);
 }

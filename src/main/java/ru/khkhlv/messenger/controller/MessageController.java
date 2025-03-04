@@ -34,4 +34,14 @@ public class MessageController {
         messageService.deleteMessage(id);
         return "Message with ID " + id + " has been deleted.";
     }
+
+    @GetMapping("/all")
+    public List<Message> getAllMessages() {
+        return messageService.getAllMessages();
+    }
+
+    @GetMapping("/search")
+    public List<Message> searchMessages(@RequestParam String keyword) {
+        return messageService.searchMessages(keyword);
+    }
 }

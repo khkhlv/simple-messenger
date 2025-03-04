@@ -35,4 +35,13 @@ public class MessageService {
         return messageRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Message not found with ID: " + id));
     }
+
+    public List<Message> searchMessages(String keyword) {
+        return messageRepo.findByContentContainingIgnoreCase(keyword);
+    }
+
+    public List<Message> getAllMessages() {
+        return messageRepo.findAll();
+    }
+
 }
