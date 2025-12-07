@@ -6,22 +6,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class Message {
+public class Chat {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User sender;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Chat chat;
-
-    private String content;
-    private LocalDateTime timestamp = LocalDateTime.now();
-    private boolean deleted = false; // soft delete
+    @ManyToMany
+    @JoinTable(
+            name = "chat_participants",
+            joinColumns = @JoinColumn(name = "chat_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> participants = new HashSet<>();
 }

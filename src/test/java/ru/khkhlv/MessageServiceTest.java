@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import ru.khkhlv.messenger.model.Message;
-import ru.khkhlv.messenger.repository.MessageRepo;
+import ru.khkhlv.messenger.repository.MessageRepository;
 import ru.khkhlv.messenger.service.MessageService;
 
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 class MessageServiceTest {
 
     @Mock
-    private MessageRepo messageRepository;
+    private MessageRepository messageRepository;
 
     @InjectMocks
     private MessageService messageService;

@@ -1,56 +1,39 @@
 package ru.khkhlv.messenger.controller;
 
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import ru.khkhlv.messenger.model.Message;
-import ru.khkhlv.messenger.service.MessageService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.khkhlv.messenger.dto.MessageDto;
+import ru.khkhlv.messenger.service.MessageService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/messages")
+@RequestMapping("/chats/{chatId}/messages")
+@RequiredArgsConstructor
 public class MessageController {
+    private final MessageService messageService;
 
-    @Autowired
-    private MessageService messageService;
-
-    @PostMapping("/send")
-    public ResponseEntity<Message> sendMessage(@RequestParam("sender") String sender,
-                                               @RequestParam("recipient") String recipient,
-                                               @RequestParam("content") String content) {
-        try {
-            Message message = messageService.sendMessage(sender, recipient, content);
-            return ResponseEntity.ok(message);
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+    @GetMapping
+    public ResponseEntity<List<MessageDto>> getMessages(@PathVariable Long chatId) {
+        return ResponseEntity.ok(messageService.getMessages(chatId));
     }
 
-    @GetMapping("/{recipient}")
-    public List<Message> getMessages(@PathVariable("recipient") String recipient) {
-        return messageService.getMessagesForUser(recipient);
+    @PostMapping
+    public ResponseEntity<MessageDto> sendMessage(@PathVariable Long chatId, @RequestBody String content) {
+        return ResponseEntity.ok(messageService.sendMessage(chatId, content.trim()));
     }
 
-    @GetMapping("/message/{id}")
-    public Message getMessage(@PathVariable("id") Long id) {
-        return messageService.getMessageById(id);
-    }
-
-    @DeleteMapping("/{id}")
-    public String deleteMessage(@PathVariable("id") Long id) {
-        messageService.deleteMessage(id);
-        return "Message with ID " + id + " has been deleted.";
-    }
-
-    @GetMapping("/all")
-    public List<Message> getAllMessages() {
-        return messageService.getAllMessages();
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<Void> deleteMessage(@PathVariable Long chatId, @PathVariable Long messageId) {
+        messageService.deleteMessage(chatId, messageId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search")
-    public List<Message> searchMessages(@RequestParam("keyword") String keyword) {
-        return messageService.searchMessages(keyword);
+    public ResponseEntity<List<MessageDto>> searchMessages(
+            @PathVariable Long chatId,
+            @RequestParam String query) {
+        return ResponseEntity.ok(messageService.searchMessages(chatId, query));
     }
 }
