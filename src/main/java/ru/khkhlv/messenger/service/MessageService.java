@@ -1,6 +1,7 @@
 package ru.khkhlv.messenger.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.khkhlv.messenger.dto.MessageDto;
 import ru.khkhlv.messenger.model.Chat;
@@ -21,6 +22,7 @@ public class MessageService {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final SecurityContextHelper securityContextHelper;
+    private final SimpMessagingTemplate messagingTemplate; // внедрить через конструктор
 
     public List<MessageDto> getMessages(Long chatId) {
         validateUserInChat(chatId);
@@ -40,7 +42,11 @@ public class MessageService {
         message.setChat(chat);
         message.setContent(content);
         message = messageRepository.save(message);
-        return toDto(message);
+
+        MessageDto dto = toDto(message);
+        messagingTemplate.convertAndSend("/topic/chat/" + chatId, dto);
+
+        return dto;
     }
 
     public void deleteMessage(Long chatId, Long messageId) {
