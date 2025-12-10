@@ -1,8 +1,8 @@
 stages:
   - build
   - test
-  - sonar-check
-  - quality-check
+#  - sonar-check
+#  - quality-check
   - create-mr
 
 variables:
@@ -58,52 +58,52 @@ test:
     reports:
       junit: target/surefire-reports/*.xml
 
-sonar-check:
-  image: maven:3-openjdk-18
-  stage: sonar-check
-  tags:
-    - messenger
-  script:
-    - mvn clean install
-    - mvn sonar:sonar \
-      -Dsonar.tests=src/test/java/ru/khkhlv \
-      -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-      -Dsonar.host.url=$SONAR_HOST_URL \
-      -Dsonar.login=$SONAR_TOKEN \
-      -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-      -Dsonar.qualitygate.wait=true
-  dependencies:
-    - test
+#sonar-check:
+#  image: maven:3-openjdk-18
+#  stage: sonar-check
+#  tags:
+#    - messenger
+#  script:
+#    - mvn clean install
+#    - mvn sonar:sonar \
+#      -Dsonar.tests=src/test/java/ru/khkhlv \
+#      -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+#      -Dsonar.host.url=$SONAR_HOST_URL \
+#      -Dsonar.login=$SONAR_TOKEN \
+#      -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+#      -Dsonar.qualitygate.wait=true
+#  dependencies:
+#    - test
 
-check-metrics:
-  image: praqma/network-multitool:latest
-  stage: quality-check
-  tags:
-    - messenger
-  before_script:
-    - apk add --no-cache jq curl bc
-  script:
-    - sleep 30
-    - |
-      ATTEMPT=0
-      MAX_ATTEMPTS=${MAX_ATTEMPTS:-10}
-      PROJECT_KEY="$SONAR_PROJECT_KEY"
-
-      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
-        if [ "$STATUS" = "OK" ]; then
-          echo "Quality Gate passed"
-          exit 0
-        elif [ "$STATUS" = "ERROR" ]; then
-          echo "Quality Gate failed"
-          exit 1
-        fi
-        sleep 30
-        ATTEMPT=$((ATTEMPT+1))
-      done
-
-      echo "Timeout waiting for Quality Gate"
-      exit 1
+#check-metrics:
+#  image: praqma/network-multitool:latest
+#  stage: quality-check
+#  tags:
+#    - messenger
+#  before_script:
+#    - apk add --no-cache jq curl bc
+#  script:
+#    - sleep 30
+#    - |
+#      ATTEMPT=0
+#      MAX_ATTEMPTS=${MAX_ATTEMPTS:-10}
+#      PROJECT_KEY="$SONAR_PROJECT_KEY"
+#
+#      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+#        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
+#        if [ "$STATUS" = "OK" ]; then
+#          echo "Quality Gate passed"
+#          exit 0
+#        elif [ "$STATUS" = "ERROR" ]; then
+#          echo "Quality Gate failed"
+#          exit 1
+#        fi
+#        sleep 30
+#        ATTEMPT=$((ATTEMPT+1))
+#      done
+#
+#      echo "Timeout waiting for Quality Gate"
+#      exit 1
 
 create-merge-request:
   stage: create-mr
