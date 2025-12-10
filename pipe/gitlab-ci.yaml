@@ -142,4 +142,4 @@ create-merge-request:
           "https://gitlab.com/api/v4/projects/$PROJECT_ID_ENCODED/merge_requests"
       fi
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "trigger"'  # запускается только при триггере из GitHub
+    - if: '$CI_PIPELINE_SOURCE == "trigger token"'  # запускается только при триггере из GitHub
