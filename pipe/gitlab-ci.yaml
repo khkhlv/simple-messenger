@@ -3,7 +3,6 @@ stages:
   - test
 #  - sonar-check
 #  - quality-check
-  - create-mr
 
 variables:
   # Отключаем стандартный clone из GitLab
@@ -14,8 +13,6 @@ variables:
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
   SONAR_PROJECT_KEY: "simple_messenger"
   MAX_ATTEMPTS: "10"
-
-  # GitHub repo (публичный — без токена)
   GITHUB_REPO: "https://github.com/khkhlv/simple-messenger.git"
 
 # Клонируем актуальный код из GitHub перед всеми job'ами
@@ -104,42 +101,3 @@ test:
 #
 #      echo "Timeout waiting for Quality Gate"
 #      exit 1
-
-create-merge-request:
-  stage: create-mr
-  image: alpine:latest
-  tags:
-    - messenger
-  before_script:
-    - apk add --no-cache curl jq
-  script:
-    - |
-      # Этот job запускается только при триггере на master
-      # Но так как мы используем GIT_STRATEGY: none, ветка — не из GitLab
-      # Поэтому мы всегда создаём MR из master → main
-
-      PROJECT_ID_ENCODED=$(echo "$CI_PROJECT_PATH" | jq -sRr '@uri')
-      SOURCE_BRANCH="master"
-      TARGET_BRANCH="main"
-      MR_TITLE="Sync from GitHub master"
-
-      EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-        "https://gitlab.com/api/v4/projects/$PROJECT_ID_ENCODED/merge_requests?source_branch=$SOURCE_BRANCH&target_branch=$TARGET_BRANCH&state=opened")
-
-      MR_IID=$(echo "$EXISTING_MR" | jq -r '.[0].iid // empty')
-
-      if [ -n "$MR_IID" ]; then
-        echo "MR !${MR_IID} already exists — skipping creation"
-      else
-        echo "Creating MR from $SOURCE_BRANCH → $TARGET_BRANCH"
-        curl --fail -X POST \
-          --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-          --form "source_branch=$SOURCE_BRANCH" \
-          --form "target_branch=$TARGET_BRANCH" \
-          --form "title=$MR_TITLE" \
-          --form "remove_source_branch=false" \
-          --form "squash=false" \
-          "https://gitlab.com/api/v4/projects/$PROJECT_ID_ENCODED/merge_requests"
-      fi
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "trigger token"'  # запускается только при триггере из GitHub
