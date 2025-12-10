@@ -29,5 +29,3 @@ networks:
   messenger-network:
     name: messenger-network
     driver: bridge
-
-# test
