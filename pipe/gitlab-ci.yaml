@@ -13,7 +13,6 @@ variables:
   SONAR_ORGANIZATION: "hohlov-aleksandr-a"
   SONAR_HOST_URL: "https://sonarcloud.io"
   SONAR_TOKEN: "8d8db1fcb82fa3316a9c05aa2c6014c008cd581c"
-  MAX_ATTEMPTS: "30"
   DOCKER_HUB_REPO: "khkhlv/messenger"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
 
@@ -76,6 +75,7 @@ check-metrics:
 
       while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
         STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
+        echo "$STATUS"
         if [ "$STATUS" = "OK" ]; then
           echo "✅ Quality Gate passed"
           break
@@ -83,7 +83,7 @@ check-metrics:
           echo "❌ Quality Gate failed"
           exit 1
         fi
-        sleep 15
+        sleep 30
         ATTEMPT=$((ATTEMPT+1))
       done
 
