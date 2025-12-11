@@ -17,5 +17,5 @@ jobs:
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_PUSH_TOKEN }}
         run: |
-          git remote add gitlab https://oauth2:${GITLAB_TOKEN}@gitlab.com/khkhlv/simple-messenger.git
+          git remote add gitlab https://oauth2:${GITLAB_TOKEN}@gitlab.com/hohlov.aleksandr.a/simple-messenger.git
           git push --force gitlab HEAD:master
