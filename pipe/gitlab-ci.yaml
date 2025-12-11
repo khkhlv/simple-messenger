@@ -8,7 +8,6 @@ stages:
 variables:
   # Отключаем стандартный clone из GitLab
   GIT_STRATEGY: none
-
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
@@ -17,14 +16,15 @@ variables:
   GITHUB_REPO: "https://github.com/khkhlv/simple-messenger.git"
   DOCKER_HUB_REPO: "khkhlv/messenger"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+
 # Клонируем актуальный код из GitHub перед всеми job'ами
-before_script:
-  - echo "Cloning from GitHub..."
-  - git init
-  - git remote add origin $GITHUB_REPO
-  - git fetch --depth=1 origin master
-  - git checkout FETCH_HEAD
-  - echo "Checked out commit: $(git rev-parse HEAD)"
+before_script: |
+  echo "Cloning from GitHub..."
+  git init
+  git remote add origin $GITHUB_REPO
+  git fetch --depth=1 origin master
+  git checkout FETCH_HEAD
+  echo "Checked out commit: $(git rev-parse HEAD)"
 
 cache:
   key: maven
