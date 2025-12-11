@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -9,36 +8,46 @@ import {
   Toolbar,
   Typography,
   Button,
-  List,
-  ListItem,
-  ListItemText,
   Divider,
-  Paper,
-  TextField,
-  IconButton,
-  InputAdornment,
+  Menu,
+  MenuItem,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import SendIcon from '@mui/icons-material/Send';
 import ChatList from '../components/ChatList';
 import MessageList from '../components/MessageList';
 import MessageInput from '../components/MessageInput';
+import UserSearch from '../components/UserSearch';
 
 const drawerWidth = 280;
 
 export default function Dashboard() {
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
   const navigate = useNavigate();
   const [selectedChat, setSelectedChat] = useState(null);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+    handleMenuClose();
+  };
+
+  const handleUserSelect = (chat) => {
+    console.log("handleUserSelect received chat:", chat); // ✅ Добавь лог
+    setSelectedChat(chat);
   };
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
-      {/* Sidebar */}
       <Drawer
         variant="permanent"
         sx={{
@@ -53,25 +62,43 @@ export default function Dashboard() {
           </Typography>
         </Toolbar>
         <Divider />
+
+        <UserSearch onUserSelect={handleUserSelect} />
+
         <ChatList onSelectChat={setSelectedChat} />
       </Drawer>
 
-      {/* Main content */}
       <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <AppBar position="static" color="default" elevation={1}>
           <Toolbar>
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
               {selectedChat
-                ? selectedChat.participants.join(', ')
-                : 'Select a chat'}
+                ? selectedChat.participants.filter(p => p !== currentUser?.username).join(', ')
+                : 'Select a chat or search user'}
             </Typography>
-            <Button color="error" onClick={handleLogout}>
-              Logout
-            </Button>
+
+            {currentUser && (
+              <>
+                <Button color="inherit" onClick={handleMenuOpen}>
+                  {currentUser.username}
+                </Button>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleMenuClose}
+                >
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </Menu>
+              </>
+            )}
           </Toolbar>
         </AppBar>
 
-        {selectedChat ? (
+        {selectedChat &&
+          typeof selectedChat === 'object' &&
+          selectedChat.id &&
+          typeof selectedChat.id === 'number' &&
+          !Array.isArray(selectedChat) ? (
           <>
             <MessageList chatId={selectedChat.id} />
             <MessageInput chatId={selectedChat.id} />
@@ -86,7 +113,7 @@ export default function Dashboard() {
               color: 'text.secondary',
             }}
           >
-            <Typography>Select a chat to start messaging</Typography>
+            <Typography>Select a chat or search user to start messaging</Typography>
           </Box>
         )}
       </Box>

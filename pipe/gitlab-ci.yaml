@@ -1,8 +1,9 @@
 stages:
   - build
   - test
-#  - sonar-check
-#  - quality-check
+  - sonar-check
+  - quality-check
+  - docker
 
 variables:
   # Отключаем стандартный clone из GitLab
@@ -14,7 +15,8 @@ variables:
   SONAR_PROJECT_KEY: "simple_messenger"
   MAX_ATTEMPTS: "10"
   GITHUB_REPO: "https://github.com/khkhlv/simple-messenger.git"
-
+  DOCKER_HUB_REPO: "khkhlv/messenger"
+  DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
 # Клонируем актуальный код из GitHub перед всеми job'ами
 before_script:
   - echo "Cloning from GitHub..."
@@ -55,49 +57,104 @@ test:
     reports:
       junit: target/surefire-reports/*.xml
 
-#sonar-check:
-#  image: maven:3-openjdk-18
-#  stage: sonar-check
-#  tags:
-#    - messenger
-#  script:
-#    - mvn clean install
-#    - mvn sonar:sonar \
-#      -Dsonar.tests=src/test/java/ru/khkhlv \
-#      -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-#      -Dsonar.host.url=$SONAR_HOST_URL \
-#      -Dsonar.login=$SONAR_TOKEN \
-#      -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-#      -Dsonar.qualitygate.wait=true
-#  dependencies:
-#    - test
+sonar-check:
+  image: maven:3-openjdk-18
+  stage: sonar-check
+  tags:
+    - messenger
+  script:
+    - mvn clean install
+    - mvn sonar:sonar \
+      -Dsonar.tests=src/test/java/ru/khkhlv \
+      -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+      -Dsonar.host.url=$SONAR_HOST_URL \
+      -Dsonar.login=$SONAR_TOKEN \
+      -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+      -Dsonar.qualitygate.wait=true
+  dependencies:
+    - test
 
-#check-metrics:
-#  image: praqma/network-multitool:latest
-#  stage: quality-check
-#  tags:
-#    - messenger
-#  before_script:
-#    - apk add --no-cache jq curl bc
-#  script:
-#    - sleep 30
-#    - |
-#      ATTEMPT=0
-#      MAX_ATTEMPTS=${MAX_ATTEMPTS:-10}
-#      PROJECT_KEY="$SONAR_PROJECT_KEY"
-#
-#      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-#        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
-#        if [ "$STATUS" = "OK" ]; then
-#          echo "Quality Gate passed"
-#          exit 0
-#        elif [ "$STATUS" = "ERROR" ]; then
-#          echo "Quality Gate failed"
-#          exit 1
-#        fi
-#        sleep 30
-#        ATTEMPT=$((ATTEMPT+1))
-#      done
-#
-#      echo "Timeout waiting for Quality Gate"
-#      exit 1
+# Дополнительная проверка метрик (на случай, если Sonar не отловил всё)
+check-metrics:
+  image: praqma/network-multitool:latest
+  stage: quality-check
+  tags:
+    - messenger
+  before_script:
+    - apk add --no-cache jq curl bc
+  script:
+    - |
+      echo "Waiting for SonarQube analysis to be available..."
+      sleep 10
+
+      PROJECT_KEY="$SONAR_PROJECT_KEY"
+      MAX_ATTEMPTS=10
+      ATTEMPT=0
+
+      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
+        if [ "$STATUS" = "OK" ]; then
+          echo "✅ Quality Gate passed"
+          break
+        elif [ "$STATUS" = "ERROR" ]; then
+          echo "❌ Quality Gate failed"
+          exit 1
+        fi
+        sleep 15
+        ATTEMPT=$((ATTEMPT+1))
+      done
+
+      if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+        echo "⏰ Timeout waiting for Quality Gate"
+        exit 1
+      fi
+
+      # Проверка покрытия ≥80%
+      COVERAGE=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/measures/component?component=$PROJECT_KEY&metricKeys=coverage" | jq -r '.component.measures[0].value')
+      if [ "$COVERAGE" = "null" ] || [ -z "$COVERAGE" ]; then
+        echo "⚠️ Coverage data unavailable"
+        exit 1
+      fi
+      if [ $(echo "$COVERAGE < 80" | bc -l) -eq 1 ]; then
+        echo "❌ Code coverage $COVERAGE% < 80%"
+        exit 1
+      fi
+
+      # Проверка критических/блокирующих issues
+      BLOCKER_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=BLOCKER" | jq -r '.total')
+      CRITICAL_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=CRITICAL" | jq -r '.total')
+
+      if [ "$BLOCKER_ISSUES" -gt 0 ] || [ "$CRITICAL_ISSUES" -gt 0 ]; then
+        echo "❌ Found $BLOCKER_ISSUES blocker and $CRITICAL_ISSUES critical issues"
+        exit 1
+      fi
+
+      echo "✅ All quality metrics passed"
+
+# Сборка и пуш Docker-образа
+docker:
+  stage: docker
+  image: docker:24
+  tags:
+    - messenger
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_TOKEN
+  script:
+    - |
+      # Если у вас нет Dockerfile в корне — создайте его или укажите путь
+      if [ ! -f Dockerfile ]; then
+        echo "❌ Dockerfile not found!"
+        exit 1
+      fi
+    - docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .
+    - docker push $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG
+    - |
+      # Опционально: пуш latest
+      if [ "$CI_COMMIT_BRANCH" = "master" ]; then
+        docker tag $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG $DOCKER_HUB_REPO:latest
+        docker push $DOCKER_HUB_REPO:latest
+      fi
+  after_script:
+    - docker logout

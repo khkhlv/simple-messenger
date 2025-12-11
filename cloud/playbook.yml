@@ -1,0 +1,87 @@
+---
+- name: Настройка Ubuntu VM в UTM для работы с Docker
+  hosts: all
+  become: yes
+  vars:
+    docker_user: "{{ ansible_user }}"
+  tasks:
+    - name: Обновление кэша apt
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Установка зависимостей для добавления репозитория Docker
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+
+    - name: Создание директории для GPG-ключей Docker
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Добавление официального GPG-ключа Docker
+      shell: |
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Добавление репозитория Docker
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      args:
+        creates: /etc/apt/sources.list.d/docker.list
+
+    - name: Обновление кэша apt после добавления репозитория
+      apt:
+        update_cache: yes
+
+    - name: Установка Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Включение и запуск службы Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Добавление пользователя в группу docker
+      user:
+        name: "{{ docker_user }}"
+        groups: docker
+        append: yes
+
+    # Minicube
+    - name: Установка зависимости для Minikube
+      apt:
+        name:
+          - conntrack
+        state: present
+
+    - name: Скачивание и установка kubectl
+      get_url:
+        url: https://dl.k8s.io/release/v1.30.0/bin/linux/{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+
+    - name: Скачивание и установка Minikube
+      get_url:
+        url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}
+        dest: /usr/local/bin/minikube
+        mode: '0755'
+
+    - name: Запуск Minikube (в фоне, с Docker в качестве драйвера)
+      command: minikube start --driver=docker --container-runtime=docker
+      become: no
+      environment:
+        CHANGE_MINIKUBE_NONE_USER: "true"
+      register: minikube_start
+      changed_when: "'already running" not in minikube_start.stderr
+
+# ansible-playbook -i 192.168.64.5, -u khkhlv --ask-pass --ask-become-pass cloud/playbook.yml

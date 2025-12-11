@@ -1,31 +1,33 @@
 version: '3.8'
 
 services:
-  simple-messenger:
-    image: crpq13mhfsq6urcrb46a/deepk10/messenger:1.0
-    networks:
-      - messenger-network
+  # База данных
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: messenger_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Бэкенд + фронтенд
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-      spring.datasource.url: "jdbc:postgresql://messenger-db:5432/messenger_db"
-      spring.datasource.username: "postgres"
-      spring.datasource.password: "postgres"
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/messenger
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - db
 
-  messenger-db:
-    container_name: messenger-db
-    image: postgres
-    restart: always
-    ports:
-      - "5433:5432"
-    environment:
-      - POSTGRES_DB=messenger_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    networks:
-      - messenger-network
-
-networks:
-  messenger-network:
-    name: messenger-network
-    driver: bridge
+volumes:
+  postgres_data:

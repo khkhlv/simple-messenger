@@ -1,42 +1,48 @@
 import { useEffect, useState } from 'react';
-import React from 'react'
 import { Box, TextField, InputAdornment, IconButton, Paper, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import api from '../services/api';
-// import useChatWebSocket from '../hooks/useChatWebSocket'; // <-- новый хук
 
 export default function MessageList({ chatId }) {
   const [messages, setMessages] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  console.log("SearchIcon type:", typeof SearchIcon, SearchIcon);
+    console.log("MessageList received chatId:", chatId, typeof chatId, chatId);
 
-  // Загрузка истории
+  if (typeof chatId !== 'number' && typeof chatId !== 'string') {
+    console.error("❌ MessageList: Invalid chatId type or value:", chatId);
+    return <div>Error: Invalid chat</div>;
+  }
+
+  // Также проверь, что chatId — не React-объект
+  if (typeof chatId === 'object' && chatId !== null && chatId.$$typeof) {
+    console.error("❌ MessageList: chatId is a React object:", chatId);
+    return <div>Error: Invalid chat</div>;
+  }
+
   useEffect(() => {
     if (!chatId) return;
     const loadMessages = async () => {
       try {
         const res = await api.get(`/chats/${chatId}/messages`);
+        console.log(`Messages for chat ${chatId}:`, res.data);
         setMessages(res.data);
       } catch (err) {
-        console.error('Failed to load messages');
+        console.error('Failed to load messages', err);
       }
     };
     loadMessages();
   }, [chatId]);
 
-  // Обработка нового сообщения через WebSocket
   const handleNewMessage = (newMsg) => {
     setMessages(prev => [...prev, newMsg]);
-    // Если идёт поиск — обновим и его
     if (searchQuery) {
       if (newMsg.content.toLowerCase().includes(searchQuery.toLowerCase())) {
         setSearchResults(prev => [...prev, newMsg]);
       }
     }
   };
-
-//   // Подключаем WebSocket
-//   useChatWebSocket(chatId, handleNewMessage);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -47,7 +53,7 @@ export default function MessageList({ chatId }) {
       const res = await api.get(`/chats/${chatId}/messages/search?query=${searchQuery}`);
       setSearchResults(res.data);
     } catch (err) {
-      console.error('Search failed');
+      console.error('Search failed', err);
     }
   };
 

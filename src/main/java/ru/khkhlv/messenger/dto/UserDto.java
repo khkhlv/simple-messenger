@@ -1,0 +1,3 @@
+package ru.khkhlv.messenger.dto;
+
+public record UserDto(Long id, String username, String email) {}

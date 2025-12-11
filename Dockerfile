@@ -1,9 +1,28 @@
-FROM eclipse-temurin:21-alpine
-LABEL authors="khkh1v"
+FROM node:20-alpine AS frontend-build
+WORKDIR /app
 
-ARG JAR_FILE=/target/simple-messenger-1.0-SNAPSHOT.jar
-WORKDIR /opt/app
-COPY ${JAR_FILE} simple-messenger.jar
+COPY frontend/package*.json ./
+RUN npm install
+
+COPY frontend/ .
+RUN npm run build
+
+FROM maven:3.9-openjdk-21 AS backend-build
+WORKDIR /app
+
+# Копируем исходники бэкенда
+COPY src/ ./src/
+COPY pom.xml .
+
+COPY --from=frontend-build /app/dist ./src/main/resources/static
+
+RUN mvn clean package -DskipTests
+
+FROM openjdk:21-jre-slim
+WORKDIR /app
+
+COPY --from=backend-build /app/target/*.jar app.jar
+
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "simple-messenger.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
