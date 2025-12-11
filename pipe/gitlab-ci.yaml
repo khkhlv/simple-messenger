@@ -1,8 +1,8 @@
 stages:
-  - sonar-check
-  - quality-check
   - build
   - test
+  - sonar-check
+  - quality-check
   - docker
 
 variables:
