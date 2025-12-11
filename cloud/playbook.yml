@@ -82,6 +82,4 @@
       environment:
         CHANGE_MINIKUBE_NONE_USER: "true"
       register: minikube_start
-      changed_when: "'already running" not in minikube_start.stderr
-
-# ansible-playbook -i 192.168.64.5, -u khkhlv --ask-pass --ask-become-pass cloud/playbook.yml
+      changed_when: '"already running" not in minikube_start.stderr'

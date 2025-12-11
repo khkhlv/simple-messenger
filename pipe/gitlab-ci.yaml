@@ -57,7 +57,7 @@ sonar-check:
     - |
       mvn sonar:sonar \
       -Dsonar.tests=src/test/java/ru/khkhlv \
-      -Dsonar.organization=hohlov.aleksandr.a \
+      -Dsonar.organization=hohlov-aleksandr-a \
       -Dsonar.projectKey=$SONAR_PROJECT_KEY \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
