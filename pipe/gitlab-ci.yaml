@@ -14,7 +14,6 @@ variables:
   SONAR_HOST_URL: "sonarcloud.io"
   SONAR_TOKEN: "03d38910ab8714114ceb23c7689c3db0bb73a180"
   MAX_ATTEMPTS: "10"
-#  GITHUB_REPO: "https://github.com/khkhlv/simple-messenger.git"
   DOCKER_HUB_REPO: "khkhlv/messenger"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
 
@@ -29,10 +28,6 @@ build:
   tags:
     - messenger
   script:
-    - echo "=== CURRENT COMMIT IN WORKSPACE ==="
-    - git log -1 --oneline
-    - echo "=== CONTENT OF A UNIQUE FILE ==="
-    - cat .gitlab-ci.yml | head -5  # или любой файл, который вы меняли
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     paths:
