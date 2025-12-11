@@ -6,7 +6,6 @@ stages:
   - docker
 
 variables:
-  # Отключаем стандартный clone из GitLab
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
