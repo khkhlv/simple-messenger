@@ -66,7 +66,8 @@ sonar-check:
     - messenger
   script:
     - mvn clean install
-    - mvn sonar:sonar \
+    - |
+      mvn sonar:sonar \
       -Dsonar.tests=src/test/java/ru/khkhlv \
       -Dsonar.projectKey=$SONAR_PROJECT_KEY \
       -Dsonar.host.url=$SONAR_HOST_URL \
