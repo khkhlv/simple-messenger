@@ -19,7 +19,7 @@ public class JwtService {
 
     // HEX-ключ — должен быть длиной 256 бит (32 байта) в HEX = 64 символа
     private final String SECRET_KEY = "4a4d6a4e6d5261556458675a6b5e707275777a7a4245484b4e6251655468576d";
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     public String extractUserId(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -42,7 +42,7 @@ public class JwtService {
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUserId(token);
         boolean isValid = (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-        logger.info("Token valid: {}, username match: {}, expired: {}", isValid, username.equals(userDetails.getUsername()), isTokenExpired(token));
+        log.info("Token valid: {}, username match: {}, expired: {}", isValid, username.equals(userDetails.getUsername()), isTokenExpired(token));
         return isValid;
     }
 

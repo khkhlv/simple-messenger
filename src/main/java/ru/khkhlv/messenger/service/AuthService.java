@@ -1,6 +1,7 @@
 package ru.khkhlv.messenger.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.khkhlv.messenger.configuration.JwtService;
@@ -15,6 +16,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final CustomUserDetailsService userDetailsService;
 
     public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -28,16 +30,8 @@ public class AuthService {
     }
 
     public String login(LoginRequest request) {
-        userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
-        // Spring Security уже проверит пароль через Provider, но для упрощения:
-        // Можно использовать AuthenticationManager, но здесь — упрощённо
-        return jwtService.generateToken(
-                org.springframework.security.core.userdetails.User.builder()
-                        .username(request.email())
-                        .password("dummy") // не используется при генерации токена
-                        .roles("USER")
-                        .build()
-        );
+        // Загружаем пользователя через UserDetailsService
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.email());
+        return jwtService.generateToken(userDetails);
     }
 }

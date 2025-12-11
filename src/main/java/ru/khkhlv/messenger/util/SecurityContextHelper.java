@@ -13,20 +13,20 @@ import ru.khkhlv.messenger.repository.UserRepository;
 public class SecurityContextHelper {
     private final UserRepository userRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(SecurityContextHelper.class);
+    private static final Logger log = LoggerFactory.getLogger(SecurityContextHelper.class);
 
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        logger.debug("Current authentication: {}", authentication);
+        log.debug("Current authentication: {}", authentication);
         if (authentication == null || !authentication.isAuthenticated()) {
-            logger.warn("No authentication found or not authenticated");
+            log.warn("No authentication found or not authenticated");
             throw new RuntimeException("Not authenticated");
         }
         String email = authentication.getName();
-        logger.debug("Authentication name (email): {}", email);
+        log.debug("Authentication name (email): {}", email);
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    logger.error("User not found by email: {}", email);
+                    log.error("User not found by email: {}", email);
                     return new RuntimeException("User not found");
                 })
                 .getId();

@@ -98,7 +98,7 @@ check-metrics:
         echo "⚠️ Coverage data unavailable"
         exit 1
       fi
-      if [ $(echo "$COVERAGE < 10" | bc -l) -eq 1 ]; then
+      if [ $(echo "$COVERAGE < 50" | bc -l) -eq 1 ]; then
         echo "❌ Code coverage $COVERAGE% < 80%"
         exit 1
       fi

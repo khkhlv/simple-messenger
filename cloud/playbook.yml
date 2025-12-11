@@ -76,10 +76,8 @@
         dest: /usr/local/bin/minikube
         mode: '0755'
 
-    - name: Запуск Minikube (в фоне, с Docker в качестве драйвера)
-      command: minikube start --driver=docker --container-runtime=docker --memory=2000m
+    - name: Запуск Minikube (от обычного пользователя с доступом к Docker)
+      shell: sudo -u {{ docker_user }} -i -- minikube start --driver=docker --container-runtime=docker --memory=2000m
       become: yes
-      environment:
-        CHANGE_MINIKUBE_NONE_USER: "true"
       register: minikube_start
       changed_when: '"already running" not in minikube_start.stderr'
