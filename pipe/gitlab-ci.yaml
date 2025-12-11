@@ -12,7 +12,7 @@ variables:
   SONAR_PROJECT_KEY: "hohlov.aleksandr.a_simple-messenger"
   SONAR_ORGANIZATION: "hohlov-aleksandr-a"
   SONAR_HOST_URL: "https://sonarcloud.io"
-  SONAR_TOKEN: "03d38910ab8714114ceb23c7689c3db0bb73a180"
+  SONAR_TOKEN: "8d8db1fcb82fa3316a9c05aa2c6014c008cd581c"
   MAX_ATTEMPTS: "10"
   DOCKER_HUB_REPO: "khkhlv/messenger"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
