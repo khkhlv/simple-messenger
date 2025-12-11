@@ -54,16 +54,7 @@ sonar-check:
   tags:
     - messenger
   script:
-    - mvn clean install
-    - >
-      mvn sonar:sonar
-      -Dsonar.tests=src/test/java/ru/khkhlv
-      -Dsonar.organization=$SONAR_ORGANIZATION
-      -Dsonar.projectKey=$SONAR_PROJECT_KEY
-      -Dsonar.host.url=$SONAR_HOST_URL
-      -Dsonar.login=$SONAR_TOKEN
-      -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-      -Dsonar.qualitygate.wait=true
+    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml -Dsonar.qualitygate.wait=true
   dependencies:
     - test
 
