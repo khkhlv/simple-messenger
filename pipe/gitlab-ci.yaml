@@ -7,7 +7,6 @@ stages:
 
 variables:
   # Отключаем стандартный clone из GitLab
-  GIT_STRATEGY: none
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
@@ -15,23 +14,9 @@ variables:
   SONAR_HOST_URL: "sonarcloud.io"
   SONAR_TOKEN: "03d38910ab8714114ceb23c7689c3db0bb73a180"
   MAX_ATTEMPTS: "10"
-  GITHUB_REPO: "https://github.com/khkhlv/simple-messenger.git"
+#  GITHUB_REPO: "https://github.com/khkhlv/simple-messenger.git"
   DOCKER_HUB_REPO: "khkhlv/messenger"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
-
-# Клонируем актуальный код из GitHub перед всеми job'ами
-before_script: |
-  set -e
-  echo "=== Fetching fresh code from GitHub ==="
-  cd /
-  rm -rf "$CI_PROJECT_DIR"
-  mkdir -p "$CI_PROJECT_DIR"
-  cd "$CI_PROJECT_DIR"
-  git init -q
-  git remote add origin "$GITHUB_REPO"
-  git fetch --depth=1 origin master
-  git checkout -fq FETCH_HEAD
-  echo "✅ Checked out commit: $(git rev-parse HEAD)"
 
 cache:
   key: maven
