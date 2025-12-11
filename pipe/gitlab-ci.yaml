@@ -2,7 +2,7 @@ stages:
   - build
   - test
   - sonar-check
-#  - quality-check
+  - quality-check
   - docker
 
 variables:
@@ -58,62 +58,61 @@ sonar-check:
   dependencies:
     - test
 
-# Дополнительная проверка метрик (на случай, если Sonar не отловил всё)
-#check-metrics:
-#  image: praqma/network-multitool:latest
-#  stage: quality-check
-#  tags:
-#    - messenger
-#  before_script:
-#    - apk add --no-cache jq curl bc
-#  script:
-#    - |
-#      echo "Waiting for SonarQube analysis to be available..."
-#      sleep 10
-#
-#      PROJECT_KEY="$SONAR_PROJECT_KEY"
-#      MAX_ATTEMPTS=10
-#      ATTEMPT=0
-#
-#      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-#        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
-#        if [ "$STATUS" = "OK" ]; then
-#          echo "✅ Quality Gate passed"
-#          break
-#        elif [ "$STATUS" = "ERROR" ]; then
-#          echo "❌ Quality Gate failed"
-#          exit 1
-#        fi
-#        sleep 15
-#        ATTEMPT=$((ATTEMPT+1))
-#      done
-#
-#      if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-#        echo "⏰ Timeout waiting for Quality Gate"
-#        exit 1
-#      fi
-#
-#      # Проверка покрытия ≥80%
-#      COVERAGE=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/measures/component?component=$PROJECT_KEY&metricKeys=coverage" | jq -r '.component.measures[0].value')
-#      if [ "$COVERAGE" = "null" ] || [ -z "$COVERAGE" ]; then
-#        echo "⚠️ Coverage data unavailable"
-#        exit 1
-#      fi
-#      if [ $(echo "$COVERAGE < 80" | bc -l) -eq 1 ]; then
-#        echo "❌ Code coverage $COVERAGE% < 80%"
-#        exit 1
-#      fi
-#
-#      # Проверка критических/блокирующих issues
-#      BLOCKER_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=BLOCKER" | jq -r '.total')
-#      CRITICAL_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=CRITICAL" | jq -r '.total')
-#
-#      if [ "$BLOCKER_ISSUES" -gt 0 ] || [ "$CRITICAL_ISSUES" -gt 0 ]; then
-#        echo "❌ Found $BLOCKER_ISSUES blocker and $CRITICAL_ISSUES critical issues"
-#        exit 1
-#      fi
-#
-#      echo "✅ All quality metrics passed"
+check-metrics:
+  image: praqma/network-multitool:latest
+  stage: quality-check
+  tags:
+    - messenger
+  before_script:
+    - apk add --no-cache jq curl bc
+  script:
+    - |
+      echo "Waiting for SonarQube analysis to be available..."
+      sleep 10
+
+      PROJECT_KEY="$SONAR_PROJECT_KEY"
+      MAX_ATTEMPTS=10
+      ATTEMPT=0
+
+      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
+        if [ "$STATUS" = "OK" ]; then
+          echo "✅ Quality Gate passed"
+          break
+        elif [ "$STATUS" = "ERROR" ]; then
+          echo "❌ Quality Gate failed"
+          exit 1
+        fi
+        sleep 15
+        ATTEMPT=$((ATTEMPT+1))
+      done
+
+      if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+        echo "⏰ Timeout waiting for Quality Gate"
+        exit 1
+      fi
+
+      # Проверка покрытия ≥80%
+      COVERAGE=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/measures/component?component=$PROJECT_KEY&metricKeys=coverage" | jq -r '.component.measures[0].value')
+      if [ "$COVERAGE" = "null" ] || [ -z "$COVERAGE" ]; then
+        echo "⚠️ Coverage data unavailable"
+        exit 1
+      fi
+      if [ $(echo "$COVERAGE < 80" | bc -l) -eq 1 ]; then
+        echo "❌ Code coverage $COVERAGE% < 80%"
+        exit 1
+      fi
+
+      # Проверка критических/блокирующих issues
+      BLOCKER_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=BLOCKER" | jq -r '.total')
+      CRITICAL_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=CRITICAL" | jq -r '.total')
+
+      if [ "$BLOCKER_ISSUES" -gt 0 ] || [ "$CRITICAL_ISSUES" -gt 0 ]; then
+        echo "❌ Found $BLOCKER_ISSUES blocker and $CRITICAL_ISSUES critical issues"
+        exit 1
+      fi
+
+      echo "✅ All quality metrics passed"
 
 # Сборка и пуш Docker-образа
 docker:
