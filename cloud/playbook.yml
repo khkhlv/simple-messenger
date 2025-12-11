@@ -77,7 +77,7 @@
         mode: '0755'
 
     - name: Запуск Minikube (в фоне, с Docker в качестве драйвера)
-      command: minikube start --driver=docker --container-runtime=docker
+      command: minikube start --driver=docker --container-runtime=docker --memory=2000m
       become: no
       environment:
         CHANGE_MINIKUBE_NONE_USER: "true"
