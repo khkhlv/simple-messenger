@@ -12,7 +12,7 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
   SONAR_PROJECT_KEY: "simple_messenger"
-  SONAR_HOST_URL: "https://sonarcloud.io"
+  SONAR_HOST_URL: "sonarcloud.io"
   SONAR_TOKEN: "03d38910ab8714114ceb23c7689c3db0bb73a180"
   MAX_ATTEMPTS: "10"
   GITHUB_REPO: "https://github.com/khkhlv/simple-messenger.git"
@@ -23,15 +23,14 @@ variables:
 before_script: |
   set -e
   echo "=== Fetching fresh code from GitHub ==="
-  rm -rf "$CI_PROJECT_DIR"/*
-  rm -rf "$CI_PROJECT_DIR"/.*
+  cd /
+  rm -rf "$CI_PROJECT_DIR"
   mkdir -p "$CI_PROJECT_DIR"
   cd "$CI_PROJECT_DIR"
-  git init
+  git init -q
   git remote add origin "$GITHUB_REPO"
   git fetch --depth=1 origin master
-  git checkout -f FETCH_HEAD
-  git submodule update --init --recursive || true
+  git checkout -fq FETCH_HEAD
   echo "✅ Checked out commit: $(git rev-parse HEAD)"
 
 cache:
@@ -45,6 +44,10 @@ build:
   tags:
     - messenger
   script:
+    - echo "=== CURRENT COMMIT IN WORKSPACE ==="
+    - git log -1 --oneline
+    - echo "=== CONTENT OF A UNIQUE FILE ==="
+    - cat .gitlab-ci.yml | head -5  # или любой файл, который вы меняли
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     paths:
