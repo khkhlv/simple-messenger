@@ -13,7 +13,7 @@ variables:
   SONAR_ORGANIZATION: "hohlov-aleksandr-a"
   SONAR_HOST_URL: "https://sonarcloud.io"
   SONAR_TOKEN: "8d8db1fcb82fa3316a9c05aa2c6014c008cd581c"
-  MAX_ATTEMPTS: "10"
+  MAX_ATTEMPTS: "30"
   DOCKER_HUB_REPO: "khkhlv/messenger"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
 
