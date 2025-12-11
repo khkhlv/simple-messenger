@@ -9,7 +9,7 @@ variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
-  SONAR_PROJECT_KEY: "simple-messenger"
+  SONAR_PROJECT_KEY: "hohlov.aleksandr.a_simple-messenger"
   SONAR_HOST_URL: "https://sonarcloud.io"
   SONAR_TOKEN: "03d38910ab8714114ceb23c7689c3db0bb73a180"
   MAX_ATTEMPTS: "10"
