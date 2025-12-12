@@ -62,7 +62,7 @@ test-backend:
       - target/site/jacoco/jacoco.xml
     reports:
       junit: target/surefire-reports/*.xml
-    needs: ["build-backend"]
+  needs: ["build-backend"]
 
 test-frontend:
   image: node:$NODE_VERSION
