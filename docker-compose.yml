@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # База данных
   db:
     image: postgres:15
     environment:
@@ -14,11 +13,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-#    image: khkhlv/messenger-backend:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: messenger-backend
+    image: khkhlv/messenger-backend:latest
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: messenger-backend
     ports:
       - "8080:8080"
     environment:
@@ -32,11 +31,11 @@ services:
 
 
   frontend:
-    # image: khkhlv/messenger-frontend:latest
-    build:
-      context: frontend
-      dockerfile: Dockerfile
-    container_name: messenger-frontend
+    image: khkhlv/messenger-frontend:latest
+#    build:
+#      context: frontend
+#      dockerfile: Dockerfile
+#    container_name: messenger-frontend
     ports:
       - "5173:5173"
     depends_on:
