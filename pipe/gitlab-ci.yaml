@@ -97,6 +97,8 @@ check-metrics:
 docker:
   stage: docker
   image: docker:24
+  tags:
+    - messenger
   services:
     - name: docker:24-dind
       alias: docker
