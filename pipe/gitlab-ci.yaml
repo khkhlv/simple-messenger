@@ -1,7 +1,7 @@
 stages:
   - build
   - test
-#  - sonar-check
+  - sonar-check
 #  - quality-check
   - docker
 
@@ -47,16 +47,16 @@ test:
     reports:
       junit: target/surefire-reports/*.xml
 
-#sonar-check:
-#  image: maven:3-openjdk-18
-#  stage: sonar-check
-#  tags:
-#    - messenger
-#  script:
-#    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-#  dependencies:
-#    - test
-#
+sonar-check:
+  image: maven:3-openjdk-18
+  stage: sonar-check
+  tags:
+    - messenger
+  script:
+    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+  dependencies:
+    - test
+
 #check-metrics:
 #  image: praqma/network-multitool:latest
 #  stage: quality-check
