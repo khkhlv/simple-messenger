@@ -42,7 +42,7 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(""));
+                .andExpect(content().string("User registered")); // ✅ Исправлено: теперь ожидаем "User registered"
     }
 
     @Test

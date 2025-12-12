@@ -15,9 +15,7 @@ services:
 
   # Бэкенд + фронтенд
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: khkhlv/messenger:latest
     ports:
       - "8080:8080"
     environment:
