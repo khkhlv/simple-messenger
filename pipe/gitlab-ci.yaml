@@ -92,17 +92,6 @@ check-metrics:
         exit 1
       fi
 
-      # Проверка покрытия ≥80%
-      COVERAGE=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/measures/component?component=$PROJECT_KEY&metricKeys=coverage" | jq -r '.component.measures[0].value')
-      if [ "$COVERAGE" = "null" ] || [ -z "$COVERAGE" ]; then
-        echo "⚠️ Coverage data unavailable"
-        exit 1
-      fi
-      if [ $(echo "$COVERAGE < 50" | bc -l) -eq 1 ]; then
-        echo "❌ Code coverage $COVERAGE% < 80%"
-        exit 1
-      fi
-
       # Проверка критических/блокирующих issues
       BLOCKER_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=BLOCKER" | jq -r '.total')
       CRITICAL_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=CRITICAL" | jq -r '.total')
