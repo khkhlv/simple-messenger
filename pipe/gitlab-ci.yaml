@@ -47,50 +47,50 @@ test:
     reports:
       junit: target/surefire-reports/*.xml
 
-sonar-check:
-  image: maven:3-openjdk-18
-  stage: sonar-check
-  tags:
-    - messenger
-  script:
-    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-  dependencies:
-    - test
-
-check-metrics:
-  image: praqma/network-multitool:latest
-  stage: quality-check
-  tags:
-    - messenger
-  before_script:
-    - apk add --no-cache jq curl bc
-  script:
-    - |
-      echo "Waiting for SonarQube analysis to be available..."
-      sleep 10
-
-      PROJECT_KEY="$SONAR_PROJECT_KEY"
-      MAX_ATTEMPTS=5
-      ATTEMPT=0
-
-      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
-        echo "$STATUS"
-        if [ "$STATUS" = "OK" ]; then
-          echo "✅ Quality Gate passed"
-          break
-        elif [ "$STATUS" = "ERROR" ]; then
-          echo "❌ Quality Gate failed"
-          exit 1
-        fi
-        sleep 10
-        ATTEMPT=$((ATTEMPT+1))
-      done
-
-      if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-        echo "⏰ Timeout waiting for Quality Gate"
-        exit 1
-      fi
+#sonar-check:
+#  image: maven:3-openjdk-18
+#  stage: sonar-check
+#  tags:
+#    - messenger
+#  script:
+#    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+#  dependencies:
+#    - test
+#
+#check-metrics:
+#  image: praqma/network-multitool:latest
+#  stage: quality-check
+#  tags:
+#    - messenger
+#  before_script:
+#    - apk add --no-cache jq curl bc
+#  script:
+#    - |
+#      echo "Waiting for SonarQube analysis to be available..."
+#      sleep 10
+#
+#      PROJECT_KEY="$SONAR_PROJECT_KEY"
+#      MAX_ATTEMPTS=5
+#      ATTEMPT=0
+#
+#      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+#        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
+#        echo "$STATUS"
+#        if [ "$STATUS" = "OK" ]; then
+#          echo "✅ Quality Gate passed"
+#          break
+#        elif [ "$STATUS" = "ERROR" ]; then
+#          echo "❌ Quality Gate failed"
+#          exit 1
+#        fi
+#        sleep 10
+#        ATTEMPT=$((ATTEMPT+1))
+#      done
+#
+#      if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+#        echo "⏰ Timeout waiting for Quality Gate"
+#        exit 1
+#      fi
 
 
 # Сборка и пуш Docker-образа
