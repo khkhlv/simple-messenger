@@ -7,7 +7,7 @@ RUN npm install
 COPY frontend/ .
 RUN npm run build
 
-FROM maven:3.9-openjdk-21 AS backend-build
+FROM maven:3.9.11-eclipse-temurin-21 AS backend-build
 WORKDIR /app
 
 # Копируем исходники бэкенда
@@ -18,7 +18,7 @@ COPY --from=frontend-build /app/dist ./src/main/resources/static
 
 RUN mvn clean package -DskipTests
 
-FROM openjdk:21-jre-slim
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 COPY --from=backend-build /app/target/*.jar app.jar
