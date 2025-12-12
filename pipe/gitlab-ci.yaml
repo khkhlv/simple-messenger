@@ -97,26 +97,21 @@ check-metrics:
 docker:
   stage: docker
   image: docker:24
-  tags:
-    - messenger
   services:
-    - docker:24-dind
+    - name: docker:24-dind
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""  # отключаем TLS для dind в CI
   before_script:
-    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_TOKEN
+    - echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_USER" --password-stdin
   script:
+    - docker build -t "$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG" .
+    - docker push "$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG"
     - |
-      # Если у вас нет Dockerfile в корне — создайте его или укажите путь
-      if [ ! -f Dockerfile ]; then
-        echo "❌ Dockerfile not found!"
-        exit 1
-      fi
-    - docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .
-    - docker push $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG
-    - |
-      # Опционально: пуш latest
       if [ "$CI_COMMIT_BRANCH" = "master" ]; then
-        docker tag $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG $DOCKER_HUB_REPO:latest
-        docker push $DOCKER_HUB_REPO:latest
+        docker tag "$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG" "$DOCKER_HUB_REPO:latest"
+        docker push "$DOCKER_HUB_REPO:latest"
       fi
   after_script:
     - docker logout
