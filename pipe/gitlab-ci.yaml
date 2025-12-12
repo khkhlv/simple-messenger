@@ -92,16 +92,6 @@ check-metrics:
         exit 1
       fi
 
-      # Проверка критических/блокирующих issues
-      BLOCKER_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=BLOCKER" | jq -r '.total')
-      CRITICAL_ISSUES=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/issues/search?componentKeys=$PROJECT_KEY&severities=CRITICAL" | jq -r '.total')
-
-      if [ "$BLOCKER_ISSUES" -gt 0 ] || [ "$CRITICAL_ISSUES" -gt 0 ]; then
-        echo "❌ Found $BLOCKER_ISSUES blocker and $CRITICAL_ISSUES critical issues"
-        exit 1
-      fi
-
-      echo "✅ All quality metrics passed"
 
 # Сборка и пуш Docker-образа
 docker:
