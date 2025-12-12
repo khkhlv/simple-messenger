@@ -13,9 +13,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Бэкенд + фронтенд
-  app:
-    image: khkhlv/messenger:latest
+  backend:
+#    image: khkhlv/messenger-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: messenger-backend
     ports:
       - "8080:8080"
     environment:
@@ -26,6 +29,18 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - db
+
+
+  frontend:
+    # image: khkhlv/messenger-frontend:latest
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    container_name: messenger-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:

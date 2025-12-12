@@ -12,7 +12,8 @@ variables:
   SONAR_PROJECT_KEY: "hohlov.aleksandr.a_simple-messenger"
   SONAR_ORGANIZATION: "hohlov-aleksandr-a"
   SONAR_HOST_URL: "https://sonarcloud.io"
-  DOCKER_HUB_REPO: "khkhlv/messenger"
+  DOCKER_HUB_BACKEND_REPO: "khkhlv/messenger-backend"
+  DOCKER_HUB_FRONTEND_REPO: "khkhlv/messenger-frontend"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
   DOCKER_HUB_USER: "khkhlv"
 
@@ -106,12 +107,10 @@ docker:
   before_script:
     - echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_USER" --password-stdin
   script:
-    - docker build -t "$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG" .
-    - docker push "$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG"
-    - |
-      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
-        docker tag "$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG" "$DOCKER_HUB_REPO:latest"
-        docker push "$DOCKER_HUB_REPO:latest"
-      fi
+    - docker build -t "$DOCKER_HUB_BACKEND_REPO:latest" .
+    - docker push "$DOCKER_HUB_BACKEND_REPO:latest"
+    - docker build -t "$DOCKER_HUB_FRONTEND_REPO:latest" frontend/.
+    - docker push "$DOCKER_HUB_FRONTEND_REPO:latest"
+
   after_script:
     - docker logout
