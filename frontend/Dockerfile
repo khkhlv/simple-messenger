@@ -18,7 +18,6 @@ RUN npm install
 # Копируем конфигурационные файлы
 COPY vite.config.js .
 COPY index.html .
-COPY public ./public
 COPY src ./src
 
 # Создаем пользователя node для безопасности
