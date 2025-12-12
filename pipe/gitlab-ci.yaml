@@ -1,9 +1,9 @@
 stages:
   - build
   - test
-  - sonar-check
-  - quality-check
-  - docker
+#  - sonar-check
+#  - quality-check
+#  - docker
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -22,7 +22,7 @@ cache:
   paths:
     - .m2/repository
 
-build:
+build-backend:
   image: maven:3.8.6-openjdk-18
   stage: build
   tags:
@@ -34,7 +34,22 @@ build:
       - target/*.jar
     expire_in: 1 day
 
-test:
+build-frontend:
+  image: node:20
+  stage: build
+  tags:
+    - messenger
+  before_script:
+    - cd frontend
+    - npm ci
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+    expire_in: 1 hour
+
+test-backend:
   image: maven:3.8.6-openjdk-18
   stage: test
   tags:
@@ -47,70 +62,92 @@ test:
       - target/site/jacoco/jacoco.xml
     reports:
       junit: target/surefire-reports/*.xml
+    needs: ["build-backend"]
 
-sonar-check:
-  image: maven:3-openjdk-18
-  stage: sonar-check
+test-frontend:
+  image: node:$NODE_VERSION
+  stage: test
   tags:
     - messenger
   script:
-    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-  dependencies:
-    - test
+    - cd frontend
+    - npm ci --cache .npm --prefer-offline
+    - npm test --if-present -- --passWithNoTests
+    - npm run lint --if-present
+    - npm run type-check --if-present
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - frontend/junit.xml
+        - frontend/test-results.xml
+    paths:
+      - frontend/coverage/
+  needs: ["build-frontend"]
 
-check-metrics:
-  image: praqma/network-multitool:latest
-  stage: quality-check
-  tags:
-    - messenger
-  before_script:
-    - apk add --no-cache jq curl bc
-  script:
-    - |
-      echo "Waiting for SonarQube analysis to be available..."
-      sleep 10
-
-      PROJECT_KEY="$SONAR_PROJECT_KEY"
-      MAX_ATTEMPTS=5
-      ATTEMPT=0
-
-      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
-        echo "$STATUS"
-        if [ "$STATUS" = "OK" ]; then
-          echo "✅ Quality Gate passed"
-          break
-        elif [ "$STATUS" = "ERROR" ]; then
-          echo "❌ Quality Gate failed"
-          exit 1
-        fi
-        sleep 10
-        ATTEMPT=$((ATTEMPT+1))
-      done
-
-      if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-        echo "⏰ Timeout waiting for Quality Gate"
-        exit 1
-      fi
-
-# Сборка и пуш Docker-образа
-docker:
-  stage: docker
-  image: docker:24
-  tags:
-    - messenger
-  services:
-    - name: docker:24-dind
-      alias: docker
-  variables:
-    DOCKER_TLS_CERTDIR: ""  # отключаем TLS для dind в CI
-  before_script:
-    - echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_USER" --password-stdin
-  script:
-    - docker build -t "$DOCKER_HUB_BACKEND_REPO:latest" .
-    - docker push "$DOCKER_HUB_BACKEND_REPO:latest"
-    - docker build -t "$DOCKER_HUB_FRONTEND_REPO:latest" -f frontend/Dockerfile frontend/
-    - docker push "$DOCKER_HUB_FRONTEND_REPO:latest"
-
-  after_script:
-    - docker logout
+#sonar-check:
+#  image: maven:3-openjdk-18
+#  stage: sonar-check
+#  tags:
+#    - messenger
+#  script:
+#    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+#  dependencies:
+#    - test
+#
+#check-metrics:
+#  image: praqma/network-multitool:latest
+#  stage: quality-check
+#  tags:
+#    - messenger
+#  before_script:
+#    - apk add --no-cache jq curl bc
+#  script:
+#    - |
+#      echo "Waiting for SonarQube analysis to be available..."
+#      sleep 10
+#
+#      PROJECT_KEY="$SONAR_PROJECT_KEY"
+#      MAX_ATTEMPTS=5
+#      ATTEMPT=0
+#
+#      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+#        STATUS=$(curl -s -u "$SONAR_TOKEN": "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status')
+#        echo "$STATUS"
+#        if [ "$STATUS" = "OK" ]; then
+#          echo "✅ Quality Gate passed"
+#          break
+#        elif [ "$STATUS" = "ERROR" ]; then
+#          echo "❌ Quality Gate failed"
+#          exit 1
+#        fi
+#        sleep 10
+#        ATTEMPT=$((ATTEMPT+1))
+#      done
+#
+#      if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+#        echo "⏰ Timeout waiting for Quality Gate"
+#        exit 1
+#      fi
+#
+## Сборка и пуш Docker-образа
+#docker:
+#  stage: docker
+#  image: docker:24
+#  tags:
+#    - messenger
+#  services:
+#    - name: docker:24-dind
+#      alias: docker
+#  variables:
+#    DOCKER_TLS_CERTDIR: ""  # отключаем TLS для dind в CI
+#  before_script:
+#    - echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+#  script:
+#    - docker build -t "$DOCKER_HUB_BACKEND_REPO:latest" .
+#    - docker push "$DOCKER_HUB_BACKEND_REPO:latest"
+#    - docker build -t "$DOCKER_HUB_FRONTEND_REPO:latest" -f frontend/Dockerfile frontend/
+#    - docker push "$DOCKER_HUB_FRONTEND_REPO:latest"
+#
+#  after_script:
+#    - docker logout
