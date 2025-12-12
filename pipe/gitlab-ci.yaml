@@ -65,7 +65,7 @@ test-backend:
   needs: ["build-backend"]
 
 test-frontend:
-  image: node:$NODE_VERSION
+  image: node:20
   stage: test
   tags:
     - messenger
