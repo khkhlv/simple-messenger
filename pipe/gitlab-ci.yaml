@@ -76,13 +76,6 @@ test-frontend:
     - npx jest --ci --coverage --passWithNoTests
   artifacts:
     when: always
-    reports:
-      junit:
-        - frontend/junit.xml
-        - frontend/test-results.xml
-    paths:
-      - frontend/coverage/
-      - frontend/junit.xml
   needs: ["build-frontend"]
 
 #sonar-check:
