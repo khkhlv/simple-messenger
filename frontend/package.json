@@ -24,6 +24,7 @@
     "sockjs-client": "^1.6.1"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.28.5",
     "@babel/preset-react": "^7.28.5",
     "@eslint/js": "^9.39.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -46,7 +47,9 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/src/setupTests.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
+    ],
     "transform": {
       "^.+\\.(js|jsx)$": "babel-jest"
     },
@@ -59,7 +62,11 @@
       "!src/main.jsx",
       "!src/**/*.d.ts"
     ],
-    "coverageReporters": ["text", "lcov", "html"]
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
   },
   "overrides": {
     "react": "$react",
