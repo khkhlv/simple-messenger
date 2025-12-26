@@ -3,7 +3,7 @@ stages:
   - test
 #  - sonar-check
 #  - quality-check
-#  - docker
+  - docker
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -123,23 +123,23 @@ test-frontend:
 #      fi
 #
 ## Сборка и пуш Docker-образа
-#docker:
-#  stage: docker
-#  image: docker:24
-#  tags:
-#    - messenger
-#  services:
-#    - name: docker:24-dind
-#      alias: docker
-#  variables:
-#    DOCKER_TLS_CERTDIR: ""  # отключаем TLS для dind в CI
-#  before_script:
-#    - echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_USER" --password-stdin
-#  script:
-#    - docker build -t "$DOCKER_HUB_BACKEND_REPO:latest" .
-#    - docker push "$DOCKER_HUB_BACKEND_REPO:latest"
-#    - docker build -t "$DOCKER_HUB_FRONTEND_REPO:latest" -f frontend/Dockerfile frontend/
-#    - docker push "$DOCKER_HUB_FRONTEND_REPO:latest"
-#
-#  after_script:
-#    - docker logout
+docker:
+  stage: docker
+  image: docker:24
+  tags:
+    - messenger
+  services:
+    - name: docker:24-dind
+      alias: docker
+  variables:
+    DOCKER_TLS_CERTDIR: ""  # отключаем TLS для dind в CI
+  before_script:
+    - echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+  script:
+    - docker build -t "$DOCKER_HUB_BACKEND_REPO:latest" .
+    - docker push "$DOCKER_HUB_BACKEND_REPO:latest"
+    - docker build -t "$DOCKER_HUB_FRONTEND_REPO:latest" -f frontend/Dockerfile frontend/
+    - docker push "$DOCKER_HUB_FRONTEND_REPO:latest"
+
+  after_script:
+    - docker logout
