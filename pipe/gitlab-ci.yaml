@@ -4,6 +4,8 @@ stages:
 #  - sonar-check
 #  - quality-check
   - docker
+  - notify
+
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
