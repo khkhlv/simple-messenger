@@ -18,8 +18,8 @@ variables:
   DOCKER_HUB_FRONTEND_REPO: "khkhlv/messenger-frontend"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
   DOCKER_HUB_USER: "khkhlv"
-  TELEGRAM_BOT_TOKEN: $TELEGRAM_BOT_TOKEN
-  TELEGRAM_CHAT_ID: $TELEGRAM_CHAT_ID
+  TELEGRAM_BOT_TOKEN: "$TELEGRAM_BOT_TOKEN"
+  TELEGRAM_CHAT_ID: "$TELEGRAM_CHAT_ID"
 
 cache:
   key: maven
@@ -168,6 +168,9 @@ notify_on_success:
       curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
       -d "chat_id=${TELEGRAM_CHAT_ID}" \
       -d "text=${MESSAGE}"
+      
+      echo "${TELEGRAM_CHAT_ID}"
+      echo "${TELEGRAM_BOT_TOKEN}"
   when: on_success
   allow_failure: true
   needs:
