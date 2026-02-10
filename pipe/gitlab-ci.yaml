@@ -1,8 +1,8 @@
 stages:
   - build
   - test
-    - sonar-check
-    - quality-check
+  - sonar-check
+  - quality-check
   - docker
   - notify
 
