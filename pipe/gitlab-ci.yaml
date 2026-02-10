@@ -189,9 +189,7 @@ notify_on_success:
     - STATUS="success" eval "$NOTIFY_SCRIPT"
   variables:
     NOTIFY_SCRIPT: *notify_template
-  rules:
-    - if: $CI_PIPELINE_STATUS == "success"
-      when: always
+  when: on_success
   allow_failure: true
   needs: ["docker"]
 
@@ -206,8 +204,6 @@ notify_on_failure:
     - STATUS="failed" eval "$NOTIFY_SCRIPT"
   variables:
     NOTIFY_SCRIPT: *notify_template
-  rules:
-    - if: $CI_PIPELINE_STATUS == "failed"
-      when: always
+  when: on_success
   allow_failure: true
   needs: ["build-backend", "build-frontend", "test-backend", "test-frontend", "docker"]
