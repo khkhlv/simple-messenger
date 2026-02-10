@@ -80,12 +80,12 @@ test-frontend:
   needs: ["build-frontend"]
 
 sonar-check:
-  image: maven:3-openjdk-18
+  image: maven:3.8.6-openjdk-18
   stage: sonar-check
   tags:
     - messenger
   script:
-    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.scanner.skipJreProvisioning=true -Dsonar.tests=src/test/java/ru/khkhlv -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
   dependencies:
     - test-backend
   needs:
@@ -194,4 +194,3 @@ notify_on_failure:
       -d "text=${MESSAGE}"
   when: on_failure
   allow_failure: true
-  needs: ["build-backend", "build-frontend", "test-backend", "test-frontend", "docker"]
