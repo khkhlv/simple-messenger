@@ -1,8 +1,8 @@
 stages:
   - build
   - test
-#  - sonar-check
-#  - quality-check
+  #  - sonar-check
+  #  - quality-check
   - docker
   - notify
 
@@ -157,17 +157,17 @@ notify_on_success:
     - apk add --no-cache curl
   script:
     - |
-      MESSAGE="✅ Pipeline #${CI_PIPELINE_ID} — УСПЕШНО
-      📦 Проект: ${CI_PROJECT_NAME}
-      🌿 Ветка: ${CI_COMMIT_REF_NAME}
-      💡 Commit: ${CI_COMMIT_SHORT_SHA}
-      👤 Автор: ${GITLAB_USER_NAME:-unknown}
-      ⏱ Длительность: ${CI_PIPELINE_DURATION:-N/A} сек
-        🔗 ${CI_PIPELINE_URL}"
-  
+      MESSAGE="Pipeline #${CI_PIPELINE_ID} — УСПЕШНО
+      Проект: ${CI_PROJECT_NAME}
+      Ветка: ${CI_COMMIT_REF_NAME}
+      Commit: ${CI_COMMIT_SHORT_SHA}
+      Автор: ${GITLAB_USER_NAME:-unknown}
+      Длительность: ${CI_PIPELINE_DURATION:-N/A} сек
+      ${CI_PIPELINE_URL}"
+      
       curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
       -d "chat_id=${TELEGRAM_CHAT_ID}" \
-      -d "text=${MESSAGE}" || echo "⚠️ Ошибка отправки в Telegram"
+      -d "text=${MESSAGE}"
   when: on_success
   allow_failure: true
   needs:
@@ -182,19 +182,17 @@ notify_on_failure:
     - apk add --no-cache curl
   script:
     - |
-      MESSAGE="❌ Pipeline #${CI_PIPELINE_ID} — ПРОВАЛ
-      📦 Проект: ${CI_PROJECT_NAME}
-      🌿 Ветка: ${CI_COMMIT_REF_NAME}
-      💡 Commit: ${CI_COMMIT_SHORT_SHA}
-      👤 Автор: ${GITLAB_USER_NAME:-unknown}
-      ⚠️ Статус: ${CI_PIPELINE_STATUS}
-        🔗 ${CI_PIPELINE_URL}"
-  
+      MESSAGE="Pipeline #${CI_PIPELINE_ID} — ПРОВАЛ
+      Проект: ${CI_PROJECT_NAME}
+      Ветка: ${CI_COMMIT_REF_NAME}
+      Commit: ${CI_COMMIT_SHORT_SHA}
+      Автор: ${GITLAB_USER_NAME:-unknown}
+      Статус: ${CI_PIPELINE_STATUS}
+      ${CI_PIPELINE_URL}"
+      
       curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
       -d "chat_id=${TELEGRAM_CHAT_ID}" \
-      -d "text=${MESSAGE}" || echo "⚠️ Ошибка отправки в Telegram"
+      -d "text=${MESSAGE}"
   when: on_failure
   allow_failure: true
-  needs:
-    - job: ["build-backend", "build-frontend", "test-backend", "test-frontend", "docker"]
-      optional: true
+  needs: ["build-backend", "build-frontend", "test-backend", "test-frontend", "docker"]
