@@ -17,12 +17,15 @@ spec:
       annotations:
         kompose.cmd: kompose convert
         kompose.version: 1.37.0 (fb0539e64)
+        argocd.argoproj.io/sync-wave: "1"
+        deploy.kubernetes.io/hash: "{{ .Values.commitHash }}"  # ← будет подменяться в CI
       labels:
         io.kompose.service: frontend
     spec:
       containers:
         - image: khkhlv/messenger-frontend:latest
           name: frontend
+          imagePullPolicy: Always
           ports:
             - containerPort: 5173
               protocol: TCP
