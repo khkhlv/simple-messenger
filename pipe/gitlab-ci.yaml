@@ -159,30 +159,9 @@ docker:
 
 deploy:
   stage: deploy
-  image: alpine/k8s:1.28.4
-  before_script:
-    - apk add --no-cache curl git
-    - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    - chmod +x /usr/local/bin/argocd
+  image: quay.io/argoproj/argocd:latest
   script:
-    - |
-      cd manifests
-      for file in *-deployment.yaml; do
-        if grep -q "deploy.kubernetes.io/hash" "$file"; then
-          sed -i "s/deploy.kubernetes.io\/hash: .*/deploy.kubernetes.io\/hash: $CI_COMMIT_SHORT_SHA/" "$file"
-        else
-          # Если аннотация ещё не добавлена — вставляем её после строки с "spec:"
-          sed -i "/spec:/a\      annotations:\n        deploy.kubernetes.io/hash: $CI_COMMIT_SHORT_SHA" "$file"
-        fi
-      done
-      cd ..
-
-    - |
-      argocd login $ARGOCD_SERVER \
-        --username $ARGOCD_USERNAME \
-        --password $ARGOCD_PASSWORD \
-        --insecure
-
+    - argocd login "$ARGOCD_SERVER" --username "$ARGOCD_USERNAME" --password "$ARGOCD_PASSWORD" --insecure
     - argocd app sync messenger-app --force
     - argocd app wait messenger-app --health --timeout 300
   rules:
