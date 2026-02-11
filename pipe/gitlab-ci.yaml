@@ -20,7 +20,7 @@ variables:
   DOCKER_HUB_USER: "khkhlv"
   ARGOCD_USERNAME: "admin"
   ARGOCD_PASSWORD: "u9ZAESKII0lrCVoV"
-  ARGOCD_SERVER: "https://localhost:8000"
+  ARGOCD_SERVER: "localhost:8000"
   FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: "true"
 
 cache:
