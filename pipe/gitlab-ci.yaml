@@ -7,7 +7,6 @@ stages:
   - deploy
   - notify
 
-
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
@@ -187,7 +186,7 @@ deploy:
     - argocd app sync messenger-app --force
     - argocd app wait messenger-app --health --timeout 300
   rules:
-    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "main"
 
 notify_on_success:
   stage: notify
